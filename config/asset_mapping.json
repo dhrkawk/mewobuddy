@@ -1,0 +1,10 @@
+{
+  "assets_base": "assets/cats",
+  "default_category": "idle",
+  "categories": {
+    "idle": {
+      "folder": "idle",
+      "preferred_file": "1130(5).gif"
+    }
+  }
+}
