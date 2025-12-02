@@ -2,9 +2,10 @@
   "assets_base": "assets/cats",
   "default_category": "idle",
   "categories": {
-    "idle": {
-      "folder": "idle",
-      "preferred_file": "1130(5).gif"
-    }
+    "idle": { "folder": "idle", "preferred_file": "" },
+    "coding": { "folder": "idle", "preferred_file": "" },
+    "youtube": { "folder": "idle", "preferred_file": "" },
+    "browsing": { "folder": "idle", "preferred_file": "" },
+    "music": { "folder": "music", "preferred_file": "" }
   }
 }

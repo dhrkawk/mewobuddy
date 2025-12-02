@@ -1,0 +1,49 @@
+{
+  "poll_interval_ms": 1000,
+  "default_category": "idle",
+  "rules": [
+    {
+      "name": "coding_vscode",
+      "process": ["code.exe"],
+      "title_contains": [],
+      "category": "coding"
+    },
+    {
+      "name": "coding_intellij_family",
+      "process": [
+        "idea64.exe",
+        "idea.exe",
+        "pycharm64.exe",
+        "pycharm.exe",
+        "clion64.exe",
+        "rider64.exe"
+      ],
+      "title_contains": [],
+      "category": "coding"
+    },
+    {
+      "name": "coding_cursor",
+      "process": ["cursor.exe"],
+      "title_contains": [],
+      "category": "coding"
+    },
+    {
+      "name": "browser_youtube_music",
+      "process": ["chrome.exe", "msedge.exe"],
+      "title_contains": ["youtube music", "music.youtube", "유튜브 뮤직"],
+      "category": "music"
+    },
+    {
+      "name": "browser_youtube",
+      "process": ["chrome.exe", "msedge.exe"],
+      "title_contains": ["youtube", "유튜브"],
+      "category": "youtube"
+    },
+    {
+      "name": "browser_general",
+      "process": ["chrome.exe", "msedge.exe", "firefox.exe"],
+      "title_contains": [],
+      "category": "browsing"
+    }
+  ]
+}
