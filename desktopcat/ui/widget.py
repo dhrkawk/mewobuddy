@@ -30,6 +30,8 @@ class CatWidget(QWidget):
         self.media_player: Optional[QMediaPlayer] = None
         self.audio_output: Optional[QAudioOutput] = None
         self.drag_overlay: Optional[QWidget] = None
+        self.notice_button: Optional[QPushButton] = None
+        self._notice_callback = None
 
         self._setup_window()
         self._build_ui()
@@ -100,6 +102,27 @@ class CatWidget(QWidget):
         self.close_button.clicked.connect(self._handle_close)
         self._position_close_button()
 
+        # Notice indicator button (hidden by default)
+        self.notice_button = QPushButton("•", self)
+        self.notice_button.setFixedSize(18, 18)
+        self.notice_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.notice_button.setVisible(False)
+        self.notice_button.setStyleSheet(
+            """
+            QPushButton {
+                background-color: rgba(255, 0, 0, 200);
+                color: white;
+                border: none;
+                border-radius: 9px;
+                font-weight: bold;
+            }
+            QPushButton:hover { background-color: rgba(255, 50, 50, 220); }
+            QPushButton:pressed { background-color: rgba(255, 80, 80, 240); }
+            """
+        )
+        self.notice_button.clicked.connect(self._on_notice_clicked)
+        self._position_notice_button()
+
         # Transparent overlay to capture drag over video
         self.drag_overlay = QWidget(self)
         self.drag_overlay.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
@@ -112,6 +135,8 @@ class CatWidget(QWidget):
         self.drag_overlay.raise_()
         self.close_button.raise_()
         self.size_grip.raise_()
+        if self.notice_button:
+            self.notice_button.raise_()
 
     def load_asset(self, asset: AssetDescriptor) -> None:
         self.asset = asset
@@ -191,6 +216,7 @@ class CatWidget(QWidget):
     def resizeEvent(self, event) -> None:
         self._update_scaled_media()
         self._position_close_button()
+        self._position_notice_button()
         self._update_drag_overlay_geometry()
         self._raise_controls()
         super().resizeEvent(event)
@@ -226,6 +252,14 @@ class CatWidget(QWidget):
         y = margin
         self.close_button.move(max(x, margin), y)
 
+    def _position_notice_button(self) -> None:
+        if not self.notice_button:
+            return
+        margin = 6
+        x = margin
+        y = margin
+        self.notice_button.move(x, y)
+
     def _handle_close(self) -> None:
         self._stop_video()
         self._stop_gif()
@@ -240,3 +274,15 @@ class CatWidget(QWidget):
 
     def _update_drag_overlay_geometry(self) -> None:
         self.drag_overlay.setGeometry(self.rect())
+
+    def set_notice_indicator(self, show: bool) -> None:
+        if self.notice_button:
+            self.notice_button.setVisible(show)
+            self._raise_controls()
+
+    def set_notice_callback(self, callback) -> None:
+        self._notice_callback = callback
+
+    def _on_notice_clicked(self) -> None:
+        if self._notice_callback:
+            self._notice_callback()
