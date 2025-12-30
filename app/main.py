@@ -19,8 +19,7 @@ from desktopcat.ui.widget import CatWidget
 
 def _resolve_override_path(args: list[str]) -> Optional[Path]:
     if len(args) > 1:
-        candidate = Path(args[1]).expanduser()
-        return candidate
+        return Path(args[1]).expanduser()
     return None
 
 
@@ -53,11 +52,12 @@ def main() -> int:
     dashboard = DashboardWindow()
     notice_poller: Optional[NoticePoller] = None
 
-    def open_dashboard_home():
+    def open_dashboard_home() -> None:
         dashboard.show()
         dashboard.raise_()
         dashboard.activateWindow()
         dashboard.open_home()
+
         if notice_poller:
             notice_poller.mark_seen()
         cat_widget.set_notice_indicator(False)
@@ -73,12 +73,14 @@ def main() -> int:
         app.aboutToQuit.connect(notice_poller.stop)
 
     exit_code = app.exec()
-    # Ensure clean shutdown
+
+    # Clean shutdown
     if context_manager:
         context_manager.stop()
     if notice_poller:
         notice_poller.stop()
     tray_manager.tray.hide()
+
     return exit_code
 
 
