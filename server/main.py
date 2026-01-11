@@ -7,7 +7,7 @@ from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, FileResponse
+from fastapi.responses import FileResponse
 from dotenv import load_dotenv, find_dotenv
 
 # Load env vars before importing routes (so ADMIN_SECRET is available)
@@ -46,6 +46,12 @@ def on_startup() -> None:
 app.include_router(router)
 
 
+@app.get("/")
+def root():
+    index_path = Path(__file__).resolve().parent / "templates" / "index.html"
+    return FileResponse(index_path)
+
+
 def _seed_notices() -> None:
     conn = get_connection()
     cur = conn.cursor()
@@ -71,113 +77,6 @@ def _seed_notices() -> None:
         )
     conn.commit()
     conn.close()
-
-
-@app.get("/admin", response_class=HTMLResponse)
-def admin_page():
-    return """
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8" />
-  <title>MeowBuddy Admin - Notices</title>
-  <style>
-    body { font-family: Arial, sans-serif; max-width: 720px; margin: 0 auto; padding: 20px; }
-    label { display: block; margin-top: 10px; font-weight: bold; }
-    input, textarea { width: 100%; padding: 8px; margin-top: 4px; }
-    button { margin-top: 12px; padding: 10px 16px; cursor: pointer; }
-    .status { margin-top: 10px; }
-    .notice { border: 1px solid #ddd; padding: 10px; margin-top: 10px; }
-    .error { color: red; }
-    .success { color: green; }
-  </style>
-</head>
-<body>
-  <h1>MeowBuddy Admin - Notices</h1>
-  <div>
-    <label for="secret">Admin Secret</label>
-    <input id="secret" type="password" placeholder="Enter admin secret" />
-
-    <label for="title">Title</label>
-    <input id="title" type="text" />
-
-    <label for="content">Content</label>
-    <textarea id="content" rows="6"></textarea>
-
-    <button onclick="publish()">Publish</button>
-    <div id="status" class="status"></div>
-  </div>
-
-  <h2>Latest Notices</h2>
-  <div id="notices"></div>
-
-  <script>
-    async function publish() {
-      const secret = document.getElementById('secret').value;
-      const title = document.getElementById('title').value;
-      const content = document.getElementById('content').value;
-      const statusEl = document.getElementById('status');
-      statusEl.textContent = 'Publishing...';
-      statusEl.className = 'status';
-      try {
-        const resp = await fetch('/admin/notices', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Admin-Secret': secret
-          },
-          body: JSON.stringify({ title, content })
-        });
-        if (!resp.ok) {
-          const txt = await resp.text();
-          throw new Error(txt || resp.statusText);
-        }
-        statusEl.textContent = 'Published!';
-        statusEl.className = 'status success';
-        document.getElementById('title').value = '';
-        document.getElementById('content').value = '';
-        loadNotices(secret);
-      } catch (err) {
-        statusEl.textContent = 'Failed: ' + err;
-        statusEl.className = 'status error';
-      }
-    }
-
-    async function loadNotices(secret) {
-      const container = document.getElementById('notices');
-      container.textContent = 'Loading...';
-      try {
-        const resp = await fetch('/admin/notices', {
-          headers: { 'X-Admin-Secret': secret }
-        });
-        if (!resp.ok) throw new Error(await resp.text());
-        const data = await resp.json();
-        if (!data.length) {
-          container.textContent = 'No notices yet.';
-          return;
-        }
-        container.innerHTML = '';
-        data.forEach(n => {
-          const div = document.createElement('div');
-          div.className = 'notice';
-          div.innerHTML = '<strong>' + n.title + '</strong><br/>' +
-            '<small>' + n.created_at + '</small><br/>' +
-            '<div>' + n.content + '</div>';
-          container.appendChild(div);
-        });
-      } catch (err) {
-        container.textContent = 'Failed to load notices: ' + err;
-      }
-    }
-
-    document.getElementById('secret').addEventListener('blur', (e) => {
-      const secret = e.target.value;
-      if (secret) loadNotices(secret);
-    });
-  </script>
-</body>
-</html>
-"""
 
 
 if __name__ == "__main__":

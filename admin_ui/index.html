@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>MeowBuddy Admin</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 760px; margin: 0 auto; padding: 20px; background: #fafafa; }
+    h1 { margin-bottom: 6px; }
+    label { display: block; margin-top: 12px; font-weight: bold; }
+    input, textarea { width: 100%; padding: 10px; margin-top: 4px; border: 1px solid #ddd; border-radius: 6px; }
+    button { margin-top: 14px; padding: 10px 16px; cursor: pointer; border: none; border-radius: 6px; background: #7b61ff; color: #fff; }
+    .status { margin-top: 10px; }
+    .notice { border: 1px solid #e5e5e5; padding: 10px; margin-top: 10px; border-radius: 6px; background: #fff; }
+    .error { color: #d93025; }
+    .success { color: #188038; }
+    .muted { color: #6b7280; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <h1>MeowBuddy Admin</h1>
+  <div class="muted">Publish notices to the FastAPI server.</div>
+
+  <div>
+    <label for="apiBase">API Base URL</label>
+    <input id="apiBase" type="text" placeholder="https://api.example.com" value="http://127.0.0.1:8000" />
+
+    <label for="secret">Admin Secret</label>
+    <input id="secret" type="password" placeholder="Enter admin secret" />
+
+    <label for="title">Title</label>
+    <input id="title" type="text" />
+
+    <label for="content">Content</label>
+    <textarea id="content" rows="6"></textarea>
+
+    <button onclick="publish()">Publish</button>
+    <div id="status" class="status"></div>
+  </div>
+
+  <h2>Latest Notices</h2>
+  <div id="notices"></div>
+
+  <script>
+    function apiBase() {
+      const val = document.getElementById('apiBase').value.trim();
+      return val.replace(/\/+$/, '');
+    }
+
+    async function publish() {
+      const base = apiBase();
+      const secret = document.getElementById('secret').value;
+      const title = document.getElementById('title').value;
+      const content = document.getElementById('content').value;
+      const statusEl = document.getElementById('status');
+      statusEl.textContent = 'Publishing...';
+      statusEl.className = 'status';
+      try {
+        const resp = await fetch(base + '/admin/notices', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Admin-Secret': secret
+          },
+          body: JSON.stringify({ title, content })
+        });
+        if (!resp.ok) {
+          const txt = await resp.text();
+          throw new Error(txt || resp.statusText);
+        }
+        statusEl.textContent = 'Published!';
+        statusEl.className = 'status success';
+        document.getElementById('title').value = '';
+        document.getElementById('content').value = '';
+        loadNotices(secret);
+      } catch (err) {
+        statusEl.textContent = 'Failed: ' + err;
+        statusEl.className = 'status error';
+      }
+    }
+
+    async function loadNotices(secret) {
+      const base = apiBase();
+      const container = document.getElementById('notices');
+      container.textContent = 'Loading...';
+      try {
+        const resp = await fetch(base + '/admin/notices', {
+          headers: { 'X-Admin-Secret': secret }
+        });
+        if (!resp.ok) throw new Error(await resp.text());
+        const data = await resp.json();
+        if (!data.length) {
+          container.textContent = 'No notices yet.';
+          return;
+        }
+        container.innerHTML = '';
+        data.forEach(n => {
+          const div = document.createElement('div');
+          div.className = 'notice';
+          div.innerHTML = '<strong>' + n.title + '</strong><br/>' +
+            '<small>' + n.created_at + '</small><br/>' +
+            '<div>' + n.content + '</div>';
+          container.appendChild(div);
+        });
+      } catch (err) {
+        container.textContent = 'Failed to load notices: ' + err;
+      }
+    }
+
+    document.getElementById('secret').addEventListener('blur', (e) => {
+      const secret = e.target.value;
+      if (secret) loadNotices(secret);
+    });
+  </script>
+</body>
+</html>
