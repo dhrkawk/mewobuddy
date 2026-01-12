@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 from typing import Optional
 
-from PyQt6.QtCore import QThread, QUrl, pyqtSignal
+from PyQt6.QtCore import QThread, QUrl, QUrlQuery, pyqtSignal
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import (
     QLabel,
@@ -235,7 +235,8 @@ class DashboardWindow(QWidget):
 
         dev_url = os.environ.get("MEOWBUDDY_DASHBOARD_URL", "").strip()
         if dev_url:
-            self.web_view.setUrl(QUrl(dev_url))
+            url = QUrl(dev_url)
+            self.web_view.setUrl(self._with_auth_query(url))
             self.web_status.setText("")
             return
 
@@ -248,8 +249,25 @@ class DashboardWindow(QWidget):
             )
             return
 
-        self.web_view.setUrl(QUrl.fromLocalFile(str(dist_index)))
+        url = QUrl.fromLocalFile(str(dist_index))
+        self.web_view.setUrl(self._with_auth_query(url))
         self.web_status.setText("")
+
+    def _with_auth_query(self, url: QUrl) -> QUrl:
+        token = self.api.token or ""
+        api_base = self.api.base_url or ""
+        if not token and not api_base:
+            return url
+
+        query = QUrlQuery(url)
+        if api_base:
+            query.removeAllQueryItems("api_base")
+            query.addQueryItem("api_base", api_base)
+        if token:
+            query.removeAllQueryItems("token")
+            query.addQueryItem("token", token)
+        url.setQuery(query)
+        return url
 
     def _on_load_finished(self, ok: bool) -> None:
         if ok:
