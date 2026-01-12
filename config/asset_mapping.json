@@ -1,10 +1,10 @@
 {
-  "assets_base": "assets/cats",
+  "assets_base": "assets/gifs",
   "default_category": "idle",
   "categories": {
-    "idle": { "folder": "idle", "preferred_file": "" },
-    "coding": { "folder": "idle", "preferred_file": "" },
-    "youtube": { "folder": "idle", "preferred_file": "" },
+    "idle": { "folder": "idle", "preferred_file": "cat_idle.gif" },
+    "game": { "folder": "game", "preferred_file": "game.gif" },
+    "youtube": { "folder": "youtube", "preferred_file": "cat_youtube.gif" },
     "browsing": { "folder": "idle", "preferred_file": "" },
     "music": { "folder": "music", "preferred_file": "" }
   }

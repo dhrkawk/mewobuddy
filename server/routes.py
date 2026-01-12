@@ -1,20 +1,22 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
+import os
 import uuid
 from datetime import datetime
 from typing import Dict
 
-from fastapi import APIRouter, Depends, HTTPException, Header, status
+from fastapi import APIRouter, Depends, Header, HTTPException, status
 
 from server.auth import create_token, get_current_user
 from server.db import get_connection
 from server.models import User
-import os
+
+
+router = APIRouter()
+
 
 def _admin_secret() -> str:
     return os.getenv("ADMIN_SECRET", "")
-
-router = APIRouter()
 
 
 @router.post("/auth/login")
@@ -25,7 +27,7 @@ def login(payload: Dict[str, str]):
 
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("SELECT id, email, created_at FROM users WHERE email = ?", (email,))
+    cur.execute("SELECT id, email, created_at FROM users WHERE email = %s", (email,))
     row = cur.fetchone()
     if row:
         user_id = row["id"]
@@ -33,7 +35,7 @@ def login(payload: Dict[str, str]):
         user_id = str(uuid.uuid4())
         now = datetime.utcnow().isoformat()
         cur.execute(
-            "INSERT INTO users (id, email, created_at) VALUES (?, ?, ?)",
+            "INSERT INTO users (id, email, created_at) VALUES (%s, %s, %s)",
             (user_id, email, now),
         )
         conn.commit()
@@ -56,9 +58,7 @@ def list_notices(current_user: User = Depends(get_current_user)):
     conn = get_connection()
     try:
         cur = conn.cursor()
-        cur.execute(
-            "SELECT id, title, content, created_at FROM notices ORDER BY created_at DESC"
-        )
+        cur.execute("SELECT id, title, content, created_at FROM notices ORDER BY created_at DESC")
         rows = cur.fetchall()
         return [
             {
@@ -98,7 +98,7 @@ def admin_create_notice(
         cur.execute(
             """
             INSERT INTO notices (id, vtuber_id, title, content, created_at)
-            VALUES (?, ?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s)
             """,
             (notice_id, vtuber_id, title, content, now),
         )
@@ -146,7 +146,7 @@ def create_notice(payload: Dict[str, str]):
         cur.execute(
             """
             INSERT INTO notices (id, vtuber_id, title, content, created_at)
-            VALUES (?, ?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s)
             """,
             (notice_id, vtuber_id, title, content, now),
         )

@@ -22,10 +22,10 @@
       "category": "coding"
     },
     {
-      "name": "coding_cursor",
-      "process": ["cursor.exe"],
+      "name": "game",
+      "process": ["discord.exe"],
       "title_contains": [],
-      "category": "coding"
+      "category": "game"
     },
     {
       "name": "browser_youtube_music",

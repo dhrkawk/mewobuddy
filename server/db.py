@@ -1,17 +1,27 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import os
-import sqlite3
-from pathlib import Path
+from typing import Any
+
+import psycopg2
+from psycopg2.extras import RealDictCursor
 
 
-DEFAULT_DB_PATH = Path(os.getenv("DB_PATH", "./server_data.db"))
+DATABASE_URL = os.getenv("DATABASE_URL") or os.getenv("SUPABASE_DATABASE_URL")
 
 
-def get_connection() -> sqlite3.Connection:
-    conn = sqlite3.connect(DEFAULT_DB_PATH, check_same_thread=False)
-    conn.row_factory = sqlite3.Row
-    return conn
+def _get_database_url() -> str:
+    if not DATABASE_URL:
+        raise RuntimeError("DATABASE_URL is required for Supabase Postgres.")
+    return DATABASE_URL
+
+
+def get_connection() -> Any:
+    db_url = _get_database_url()
+    connect_kwargs: dict[str, Any] = {}
+    if "sslmode=" not in db_url:
+        connect_kwargs["sslmode"] = os.getenv("PG_SSLMODE", "require")
+    return psycopg2.connect(db_url, cursor_factory=RealDictCursor, **connect_kwargs)
 
 
 def init_db() -> None:

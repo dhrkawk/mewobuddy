@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import uuid
 from datetime import datetime
@@ -19,7 +19,7 @@ def create_token(user_id: str) -> Token:
     token_value = uuid.uuid4().hex
     now = datetime.utcnow().isoformat()
     cur.execute(
-        "INSERT INTO tokens (token, user_id, created_at) VALUES (?, ?, ?)",
+        "INSERT INTO tokens (token, user_id, created_at) VALUES (%s, %s, %s)",
         (token_value, user_id, now),
     )
     conn.commit()
@@ -35,13 +35,19 @@ def get_user_by_token(token: str) -> Optional[User]:
         SELECT u.id, u.email, u.created_at
         FROM tokens t
         JOIN users u ON u.id = t.user_id
-        WHERE t.token = ?
+        WHERE t.token = %s
         """,
         (token,),
     )
     row = cur.fetchone()
+    conn.close()
     if row:
-        return User(id=row["id"], email=row["email"], created_at=datetime.fromisoformat(row["created_at"]))
+        created_at = row["created_at"]
+        if isinstance(created_at, datetime):
+            created_dt = created_at
+        else:
+            created_dt = datetime.fromisoformat(created_at)
+        return User(id=row["id"], email=row["email"], created_at=created_dt)
     return None
 
 

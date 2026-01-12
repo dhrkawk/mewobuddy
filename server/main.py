@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import os
 import uuid
@@ -62,16 +62,16 @@ def _seed_notices() -> None:
         return
     now = datetime.utcnow().isoformat()
     seed_data = [
-        ("방송 공지", "오늘 밤 8시에 라이브를 합니다! 많이 와주세요."),
-        ("콜라보 예고", "다음 주 금요일, 다른 버튜버와 콜라보 방송 예정입니다."),
-        ("굿즈 티저", "새로운 굿즈가 곧 출시됩니다. 기대해주세요!"),
+        ("諛⑹넚 怨듭?", "?ㅻ뒛 諛?8?쒖뿉 ?쇱씠釉뚮? ?⑸땲?? 留롮씠 ?二쇱꽭??"),
+        ("肄쒕씪蹂??덇퀬", "?ㅼ쓬 二?湲덉슂?? ?ㅻⅨ 踰꾪뒠踰꾩? 肄쒕씪蹂?諛⑹넚 ?덉젙?낅땲??"),
+        ("援우쫰 ?곗?", "?덈줈??援우쫰媛 怨?異쒖떆?⑸땲?? 湲곕??댁＜?몄슂!"),
     ]
     for title, content in seed_data:
         notice_id = str(uuid.uuid4())
         cur.execute(
             """
             INSERT INTO notices (id, vtuber_id, title, content, created_at)
-            VALUES (?, ?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s)
             """,
             (notice_id, "vtuber-1", title, content, now),
         )
@@ -88,3 +88,4 @@ if __name__ == "__main__":
         port=int(os.getenv("API_PORT", 8000)),
         reload=True,
     )
+
