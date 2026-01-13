@@ -8,4 +8,6 @@ app/web/dist/
 server_data.db
 .DS_Store
 Thumbs.db
-.gitignore
+build/
+dist/
+v-kit/

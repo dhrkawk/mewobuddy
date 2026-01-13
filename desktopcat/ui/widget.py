@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from pathlib import Path
 from typing import Optional
@@ -83,7 +83,7 @@ class CatWidget(QWidget):
         self.layout.addWidget(self.size_grip, alignment=Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignRight)
 
         # Close button
-        self.close_button = QPushButton("×", self)
+        self.close_button = QPushButton("x", self)
         self.close_button.setFixedSize(22, 22)
         self.close_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.close_button.setStyleSheet(
@@ -103,23 +103,26 @@ class CatWidget(QWidget):
         self._position_close_button()
 
         # Notice indicator button (hidden by default)
-        self.notice_button = QPushButton("•", self)
-        self.notice_button.setFixedSize(18, 18)
+        self.notice_button = QPushButton("새 공지가 도착했어요", self)
+        self.notice_button.setFixedHeight(28)
         self.notice_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.notice_button.setCursor(Qt.CursorShape.PointingHandCursor)
         self.notice_button.setVisible(False)
         self.notice_button.setStyleSheet(
             """
             QPushButton {
-                background-color: rgba(255, 0, 0, 200);
-                color: white;
-                border: none;
-                border-radius: 9px;
-                font-weight: bold;
+                background-color: #ffffff;
+                color: #111827;
+                border: 1px solid #e5e7eb;
+                border-radius: 14px;
+                font-weight: 600;
+                padding: 4px 10px;
             }
-            QPushButton:hover { background-color: rgba(255, 50, 50, 220); }
-            QPushButton:pressed { background-color: rgba(255, 80, 80, 240); }
+            QPushButton:hover { background-color: #f9fafb; }
+            QPushButton:pressed { background-color: #f3f4f6; }
             """
         )
+        self.notice_button.adjustSize()
         self.notice_button.clicked.connect(self._on_notice_clicked)
         self._position_notice_button()
 
@@ -286,3 +289,4 @@ class CatWidget(QWidget):
     def _on_notice_clicked(self) -> None:
         if self._notice_callback:
             self._notice_callback()
+
